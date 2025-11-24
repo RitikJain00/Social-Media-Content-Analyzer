@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SocialMediaAnalyzer } from "@/components/social-media-analyzer"
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
             Upload your images or PDFs to extract text and get AI-powered engagement suggestions.
           </p>
         </div>
-       
+        <SocialMediaAnalyzer />
       </div>
     </main>
   )
