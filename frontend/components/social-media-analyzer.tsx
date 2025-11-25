@@ -136,7 +136,7 @@ export function SocialMediaAnalyzer() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const response = await fetch("http://localhost:5000/upload/", {
+      const response = await fetch("https://social-media-content-analyzer-3gps.onrender.com/upload/", {
         method: "POST",
         body: formData,
       })
