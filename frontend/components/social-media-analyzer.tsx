@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useCallback } from "react"
-import { Upload, X, Sparkles, Copy, RefreshCw, CheckCircle, FileIcon } from "lucide-react"
+import { Upload, X, Sparkles, Copy, RefreshCw, CheckCircle, FileIcon, TrendingUp, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -16,11 +16,21 @@ import { cn } from "@/lib/utils"
 type AnalysisStatus = "idle" | "uploading" | "analyzing" | "complete" | "error"
 
 interface AnalysisResult {
+  filename: string
+  content_type: string
+  analysis: string
+  extracted_text_summary: string
   extractedText: string
+  engagement_score: {
+    score: number
+    reason: string
+  }
   suggestions: {
+    message: string
+    actions: string[]
     hooks: string[]
-    hashtags: string[]
     callToAction: string[]
+    hashtags: string[]
   }
 }
 
@@ -126,11 +136,10 @@ export function SocialMediaAnalyzer() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch("http://localhost:5000/upload/", {
         method: "POST",
         body: formData,
-      });
-      
+      })
 
       clearInterval(uploadInterval)
       setProgress(100)
@@ -143,7 +152,9 @@ export function SocialMediaAnalyzer() {
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       const data = await response.json()
+      
       setResult(data)
+      console.log(data)
       setStatus("complete")
     } catch (err) {
       setError("An error occurred during analysis. Please try again.")
@@ -153,6 +164,20 @@ export function SocialMediaAnalyzer() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+  }
+
+  const getScoreColor = (score: number) => {
+    if (score >= 8) return "bg-emerald-500"
+    if (score >= 6) return "bg-blue-500"
+    if (score >= 4) return "bg-amber-500"
+    return "bg-orange-500"
+  }
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 8) return "Excellent"
+    if (score >= 6) return "Good"
+    if (score >= 4) return "Fair"
+    return "Needs Work"
   }
 
   return (
@@ -212,12 +237,12 @@ export function SocialMediaAnalyzer() {
             <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
               <div className="flex items-center gap-4 overflow-hidden">
                 {previewUrl ? (
-                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={previewUrl || "/placeholder.svg"} alt="Preview" className="h-full w-full object-cover" />
                   </div>
                 ) : (
-                  <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md border bg-background">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border bg-background">
                     <FileIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
@@ -267,10 +292,91 @@ export function SocialMediaAnalyzer() {
               </Button>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="border-0 bg-linear-to-br from-background to-muted">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-1">Engagement Score</p>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold text-primary">{result.engagement_score.score}</span>
+                        <span className="text-sm text-muted-foreground">/10</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full transition-all", getScoreColor(result.engagement_score.score))}
+                        style={{ width: `${(result.engagement_score.score / 10) * 100}%` }}
+                      />
+                    </div>
+                    <Badge variant="outline">{getScoreLabel(result.engagement_score.score)}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2 border-0 bg-linear-to-br from-background to-muted">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Why?</p>
+                        <p className="text-sm text-muted-foreground">{result.engagement_score.reason}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="border-0 bg-linear-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/20 dark:to-blue-950/10">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  Content Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">SUMMARY</p>
+                  <p className="text-sm text-foreground">{result.extracted_text_summary}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">DETAILED ANALYSIS</p>
+                  <p className="text-sm text-foreground">{result.analysis}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 bg-linear-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/20 dark:to-amber-950/10">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  Content Strategy
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-3">{result.suggestions.message}</p>
+                  <div className="space-y-2">
+                    {result.suggestions.actions.map((action, i) => (
+                      <div key={i} className="flex items-start gap-3 p-2 rounded bg-background/50">
+                        <div className="shrink-0 w-5 h-5 rounded-full bg-amber-200 dark:bg-amber-900 flex items-center justify-center">
+                          <span className="text-xs font-semibold text-amber-900 dark:text-amber-200">{i + 1}</span>
+                        </div>
+                        <p className="text-sm text-foreground pt-0.5">{action}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Tabs defaultValue="suggestions" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="suggestions">Engagement Suggestions</TabsTrigger>
-                <TabsTrigger value="text">Extracted Text</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+                <TabsTrigger value="text">Raw Text</TabsTrigger>
+                <TabsTrigger value="metadata">Details</TabsTrigger>
               </TabsList>
 
               <TabsContent value="text" className="mt-4 space-y-4">
@@ -355,6 +461,25 @@ export function SocialMediaAnalyzer() {
                       </Badge>
                     ))}
                   </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="metadata" className="mt-4 space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Card className="border-0 bg-muted/50">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-muted-foreground font-semibold mb-1">CONTENT TYPE</p>
+                      <p className="text-sm font-medium capitalize text-foreground">
+                        {result.content_type.replace(/_/g, " ")}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-0 bg-muted/50">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-muted-foreground font-semibold mb-1">FILE NAME</p>
+                      <p className="text-sm font-medium text-foreground truncate">{result.filename}</p>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
             </Tabs>
