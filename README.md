@@ -39,7 +39,7 @@
 <!-- Second row: Two Result Screenshots side by side -->
 <table>
   <tr>
-    <td><img src="assets/Res1.png" alt="Result Screenshot 1" width="400"/></td>
+    <td><img src="assets/Res.png" alt="Result Screenshot 1" width="400"/></td>
     <td><img src="assets/Res2.png" alt="Result Screenshot 2" width="400"/></td>
   </tr>
 </table>
