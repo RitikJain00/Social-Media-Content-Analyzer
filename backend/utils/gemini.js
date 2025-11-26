@@ -15,7 +15,7 @@ export async function analyzeContentAI(extractedText) {
     Step 1 — Detect the content type strictly as:
     "social_post", "resume", "quote", "document", "other"
     
-    Step 2 — ALWAYS return an engagement_score (0–100) with reason. If unknown, return 0 with a note.
+    Step 2 — ALWAYS return an engagement_score (0–10) with reason. If unknown, return 0 with a note.
     
     Step 3 — ENSURE ALL FIELDS ARE ALWAYS PRESENT. Do not leave anything undefined or missing. Use empty strings or empty arrays if necessary.
     
@@ -26,7 +26,7 @@ export async function analyzeContentAI(extractedText) {
       "analysis": "",                     // Detailed analysis or empty string
       "extracted_text_summary": "",       // Short summary or empty string
       "engagement_score": {
-        "score": 0,                       // 0–100
+        "score": 0,                       // 0–10
         "reason": ""                       // Reason for score or empty string
       },
       "suggestions": {
