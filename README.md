@@ -29,7 +29,7 @@
 ---
 
 ## 📸 Screenshots & Video
-_Add screenshots and demo video here to showcase the app:_
+[_Video Walkthrough:_](https://drive.google.com/file/d/1S6tacrbX0Rc5PKEevjNA_37_ISDiKnVr/view?usp=sharing)
 
 ## 📸 Screenshots 
 
